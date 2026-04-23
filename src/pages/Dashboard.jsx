@@ -1,106 +1,65 @@
-import Navbar from "../components/Navbar";
-import Sidebar from "../components/Sidebar";
 import { useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
+import Sidebar from "../components/Sidebar";
 
-function Dashboard() {
-  const [tab, setTab] = useState("generate");
+export default function Dashboard() {
   const [text, setText] = useState("");
   const user = localStorage.getItem("loggedUser");
+const saveQR = () => {
+  let users = JSON.parse(localStorage.getItem("users")) || [];
 
-  const saveQR = () => {
-    let history = JSON.parse(localStorage.getItem("history")) || [];
+  const index = users.findIndex(
+    (u) => u.username === localStorage.getItem("loggedUser")
+  );
 
-    history.push({
-      user,
-      text,
-      time: new Date().toLocaleString(),
-    });
+  if (index === -1) {
+    alert("User not found");
+    return;
+  }
 
-    localStorage.setItem("history", JSON.stringify(history));
-    alert("Saved!");
-  };
+  // ensure history exists
+  if (!users[index].history) {
+    users[index].history = [];
+  }
 
-  const downloadQR = () => {
+  users[index].history.push(text);
+
+  localStorage.setItem("users", JSON.stringify(users));
+
+  alert("Saved to history");
+};
+  const download = () => {
     const canvas = document.querySelector("canvas");
     const link = document.createElement("a");
-    link.href = canvas.toDataURL();
     link.download = "qr.png";
+    link.href = canvas.toDataURL();
     link.click();
   };
 
   return (
-    <div>
-      {/* 🔥 NEW TOP BAR */}
-      <Navbar />
+    <div className="flex">
+      <Sidebar />
 
-      <div className="flex">
-        <Sidebar setTab={setTab} />
+      <div className="p-6 flex-1">
+        <h1 className="text-2xl font-bold mb-4">Generate QR</h1>
 
-        <div className="flex-1 p-6 bg-gray-100 min-h-screen">
-          
-          {/* GENERATE */}
-          {tab === "generate" && (
-            <div className="bg-white p-6 rounded shadow w-96">
-              <h2 className="text-xl font-bold mb-3">Generate QR</h2>
+        <input
+          className="border p-2 w-80 mb-4"
+          placeholder="Enter URL"
+          onChange={e=>setText(e.target.value)}
+        />
 
-              <input
-                className="border w-full p-2 mb-3"
-                placeholder="Enter text"
-                onChange={(e) => setText(e.target.value)}
-              />
+        {text && (
+          <div className="bg-white p-4 shadow rounded w-80 text-center">
+            <QRCodeCanvas value={text} size={180} />
 
-              {text && (
-                <div className="text-center">
-                  <QRCodeCanvas value={text} size={180} />
-
-                  <div className="mt-3 flex gap-2 justify-center">
-                    <button
-                      onClick={saveQR}
-                      className="bg-green-500 text-white px-3 py-1 rounded"
-                    >
-                      Save
-                    </button>
-
-                    <button
-                      onClick={downloadQR}
-                      className="bg-blue-500 text-white px-3 py-1 rounded"
-                    >
-                      Download
-                    </button>
-                  </div>
-                </div>
-              )}
+            <div className="mt-4 flex gap-2 justify-center">
+              <button onClick={download} className="bg-blue-500 text-white px-3 py-1 rounded">Download</button>
+              <button onClick={saveQR} className="bg-green-500 text-white px-3 py-1 rounded">Save</button>
             </div>
-          )}
-
-          {/* HISTORY */}
-          {tab === "history" && (
-            <div>
-              <h2 className="text-xl font-bold mb-4">History</h2>
-
-              {(JSON.parse(localStorage.getItem("history")) || []).map(
-                (h, i) => (
-                  <div key={i} className="bg-white p-3 mb-2 shadow rounded">
-                    <p className="font-semibold">{h.text}</p>
-                    <small className="text-gray-500">{h.time}</small>
-                  </div>
-                )
-              )}
-            </div>
-          )}
-
-          {/* PROFILE */}
-          {tab === "profile" && (
-            <div className="bg-white p-6 shadow rounded">
-              <h2 className="text-xl font-bold mb-2">Profile</h2>
-              <p>Username: {user}</p>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
-
-export default Dashboard;

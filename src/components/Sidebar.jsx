@@ -1,21 +1,20 @@
-function Sidebar({ setTab }) {
+import { useNavigate } from "react-router-dom";
+
+export default function Sidebar() {
+  const nav = useNavigate();
+
   return (
-    <div className="w-64 bg-gray-900 text-white h-screen p-5">
-      <h1 className="text-xl font-bold mb-8">QR Studio</h1>
+    <div className="w-60 bg-gray-900 text-white min-h-screen p-4">
+      <h2 className="text-xl font-bold mb-6">QR App</h2>
 
-      <button onClick={() => setTab("generate")} className="block mb-4">
-        Generate QR
-      </button>
+      <p onClick={()=>nav("/dashboard")} className="mb-3 cursor-pointer">Dashboard</p>
+      <p onClick={()=>nav("/history")} className="mb-3 cursor-pointer">History</p>
+      <p onClick={()=>nav("/profile")} className="mb-3 cursor-pointer">Profile</p>
 
-      <button onClick={() => setTab("history")} className="block mb-4">
-        History
-      </button>
-
-      <button onClick={() => setTab("profile")} className="block mb-4">
-        Profile
-      </button>
+      <p onClick={()=>{
+        localStorage.removeItem("loggedUser");
+        nav("/");
+      }} className="mt-6 text-red-400 cursor-pointer">Logout</p>
     </div>
   );
 }
-
-export default Sidebar;
